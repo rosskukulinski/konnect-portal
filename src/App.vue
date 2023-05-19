@@ -11,16 +11,18 @@
       />
     </div>
     <template v-else>
-      <Nav v-if="isFullScreen" />
+      <div id="main">
+        <Nav v-if="isFullScreen" />
 
-      <router-view v-slot="{ Component }">
-        <component
-          :is="Component"
-          :class="{'page': isFullScreen }"
-        />
-      </router-view>
+        <router-view v-slot="{ Component }">
+          <component
+            :is="Component"
+            :class="{'page': isFullScreen }"
+          />
+        </router-view>
+      </div>
+      <Footer v-if="isFullScreen" />
     </template>
-    <Footer v-if="isFullScreen" />
   </div>
 </template>
 
@@ -110,6 +112,10 @@ export default defineComponent({
 
     vertical-align: text-bottom;
   }
+}
+
+#main {
+  margin-bottom: 200px;
 }
 
 </style>

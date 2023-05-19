@@ -80,6 +80,7 @@ export default defineComponent({
   height: var(--headerHeight);
   background-color: var(--section_colors-header);
   border-bottom: 1px solid var(--section_colors-stroke);
+  margin-top: 100px;
 
   .links a {
     color: var(--text_colors-header);
