@@ -10,6 +10,8 @@ import Registration from '../views/Registration.vue'
 import Login from '../views/Login.vue'
 import ForgotPassword from '../views/ForgotPassword.vue'
 import ResetPassword from '../views/ResetPassword.vue'
+import TermsOfService from '../views/TermsOfService.vue'
+import PrivacyPolicy from '../views/PrivacyPolicy.vue'
 
 import {
   canUserAccess,
@@ -68,6 +70,22 @@ export const portalRouter = () => {
               title: helpText.resetPasswordTitle
             },
             component: ResetPassword
+          },
+          {
+            path: '/termsofservice',
+            name: 'TermsOfService',
+            meta: {
+              title: 'Terms of Service'
+            },
+            component: TermsOfService
+          },
+          {
+            path: '/privacypolicy',
+            name: 'PrivacyPolicy',
+            meta: {
+              title: 'Privacy Policy'
+            },
+            component: PrivacyPolicy
           },
           {
             path: '',
