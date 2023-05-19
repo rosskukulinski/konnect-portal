@@ -11,14 +11,17 @@
       />
     </div>
     <template v-else>
-      <Nav v-if="isFullScreen" />
+      <div id="main">
+        <Nav v-if="isFullScreen" />
 
-      <router-view v-slot="{ Component }">
-        <component
-          :is="Component"
-          :class="{'page': isFullScreen }"
-        />
-      </router-view>
+        <router-view v-slot="{ Component }">
+          <component
+            :is="Component"
+            :class="{'page': isFullScreen }"
+          />
+        </router-view>
+      </div>
+      <Footer v-if="isFullScreen" />
     </template>
   </div>
 </template>
@@ -31,6 +34,7 @@ import { ApiServiceAuthErrorReason } from '@/services/ApiService'
 import removeElementFromDOMById from '@/helpers/removeElementFromDOMById'
 import { isAuthRoute } from '@/router/route-utils'
 import Nav from '@/components/Nav.vue'
+import Footer from '@/components/Footer.vue'
 import { portalApi, kongAuthApi } from '@/services'
 import { useAppStore } from '@/stores'
 
@@ -39,7 +43,8 @@ const initialLoadingId = 'initial-fullscreen-loading-container'
 export default defineComponent({
   name: 'App',
   components: {
-    Nav
+    Nav,
+    Footer
   },
   setup () {
     removeElementFromDOMById(initialLoadingId)
@@ -107,6 +112,10 @@ export default defineComponent({
 
     vertical-align: text-bottom;
   }
+}
+
+#main {
+  margin-bottom: 200px;
 }
 
 </style>
