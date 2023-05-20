@@ -163,14 +163,14 @@ describe('Catalog', () => {
             created_at: '2022-03-23T12:41:09.371Z',
             updated_at: '2022-03-23T12:41:09.371Z',
             id: '6159b9be-bfbc-4f30-bd22-df720f6dcf90',
-            version: 'v4',
+            name: 'v4',
             deprecated: false
           },
           {
             created_at: '2022-03-23T11:46:35.613Z',
             updated_at: '2022-03-23T11:46:35.613Z',
             id: 'b820d3eb-5b70-47e5-8d97-9436a8021282',
-            version: 'v1-beta',
+            name: 'v1-beta',
             deprecated: false
           }
         ]
@@ -193,14 +193,14 @@ describe('Catalog', () => {
             created_at: '2022-03-23T12:41:09.371Z',
             updated_at: '2022-03-23T12:41:09.371Z',
             id: '6159b9be-bfbc-4f30-bd22-df720f6dcf90',
-            version: 'v4',
+            name: 'v4',
             deprecated: false
           },
           {
             created_at: '2022-03-24T11:46:35.613Z',
             updated_at: '2022-03-24T11:46:35.613Z',
             id: 'b820d3eb-5b70-47e5-8d97-9436a8021282',
-            version: 'v1-beta',
+            name: 'v1-beta',
             deprecated: false
           }
         ]
@@ -319,7 +319,7 @@ describe('Catalog', () => {
         mockServiceSearchResults(servicesData.slice(12, 24), 1, totalServiceCount)
         cy.get('.card-pagination-bar [data-testid=pagination-forwards]')
           .click()
-          .get('.card-pagination-bar')
+        cy.get('.card-pagination-bar')
           .contains('13 - 24 of 37')
 
         const searchQuery = 'barAPI22'
@@ -350,7 +350,7 @@ describe('Catalog', () => {
         mockServiceSearchResults(servicesData.slice(12, 24), 2, totalServiceCount)
         cy.get('.card-pagination-bar [data-testid=pagination-forwards]')
           .click()
-          .get('.card-pagination-bar')
+        cy.get('.card-pagination-bar')
           .contains('13 - 24 of 37')
 
         const searchQuery = 'API'
@@ -376,7 +376,7 @@ describe('Catalog', () => {
         mockServiceSearchResults(servicesData.slice(12, 24), 2, totalServiceCount)
         cy.get('.card-pagination-bar [data-testid=pagination-forwards]')
           .click()
-          .get('.card-pagination-bar')
+        cy.get('.card-pagination-bar')
           .contains('13 - 24 of 37')
 
         cy.get('[data-testid="view-switcher"]:not(:disabled)').click()
