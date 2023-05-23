@@ -36,7 +36,7 @@
 import { defineComponent } from 'vue'
 import { mapState, storeToRefs } from 'pinia'
 import { useAppStore } from '@/stores'
-import { portalApi } from '@/services'
+import { portalApiV2 } from '@/services'
 
 export default defineComponent({
   name: 'Footer',
@@ -53,7 +53,7 @@ export default defineComponent({
       window.location.href = logoutUrl
     }
 
-    const logoSrc = portalApi.getApiLink('/portal_assets/logo')
+    const logoSrc = portalApiV2.getApiLink('/portal_assets/logo')
 
     return {
       logout,
