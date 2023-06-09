@@ -4,10 +4,7 @@
       class="services-top-section flex flex-col items-center justify-center py-16 bg-section_colors-hero"
     >
       <h4 class="services-welcome mb-4 font-normal color-text_colors-secondary text-2xl">
-        This is the Privacy Policy how is the weather today
-      </h4>
-      <h4 class="services-welcome mb-4 font-normal color-text_colors-secondary text-2xl">
-        Here's more text - part 2
+        {{ custom.privacy.text }}
       </h4>
     </div>
   </div>

@@ -4,7 +4,7 @@
       class="services-top-section flex flex-col items-center justify-center py-16 bg-section_colors-hero"
     >
       <h4 class="services-welcome mb-4 font-normal color-text_colors-secondary text-2xl">
-        These are the terms of services! - Hello Tuesday May 2nd.
+        {{ custom.terms.text }}
       </h4>
     </div>
   </div>
