@@ -3,10 +3,10 @@ export const en = {
     company: 'Kong, Inc.',
     terms: 'Terms of Service',
     privacy: 'Privacy Policy',
-    terms: {
+    tos: {
       text: 'These are the terms of services! - Hello Tuesday May 2nd.'
     },
-    privacy: {
+    priv: {
       text: 'This is the Privacy Policy how is the weather today'
     }
   },
