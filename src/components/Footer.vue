@@ -8,7 +8,7 @@
         href="https://konghq.com"
         target="_blank"
       >
-        {{ custom.company }}
+        {{ helpText.company }}
       </a>
       <nav class="flex items-center links">
         <router-link
@@ -17,7 +17,7 @@
           class="mr-2 p-2 tos-link"
         >
           <div class="background-color-wrapper" />
-          {{ custom.terms }}
+          {{ helpText.terms }}
         </router-link>
         <router-link
           data-testid="privacy-link"
@@ -25,7 +25,7 @@
           class="mr-2 p-2 privacy-link"
         >
           <div class="background-color-wrapper" />
-          {{ custom.privacy }}
+          {{ helpText.privacy }}
         </router-link>
       </nav>
     </div>
@@ -35,8 +35,8 @@
 <script>
 import { defineComponent } from 'vue'
 import { mapState, storeToRefs } from 'pinia'
-import { useAppStore } from '@/stores'
-import { portalApi } from '@/services'
+import { useI18nStore, useAppStore } from '@/stores'
+import usePortalApi from '@/hooks/usePortalApi'
 
 export default defineComponent({
   name: 'Footer',
@@ -44,6 +44,9 @@ export default defineComponent({
   setup () {
     const appStore = useAppStore()
     const { globalLoading } = storeToRefs(appStore)
+    const { portalApiV2 } = usePortalApi()
+
+    const helpText = useI18nStore().state.helpText.custom
 
     const logout = async () => {
       globalLoading.value = true
@@ -53,11 +56,12 @@ export default defineComponent({
       window.location.href = logoutUrl
     }
 
-    const logoSrc = portalApi.getApiLink('/portal_assets/logo')
+    const logoSrc = portalApiV2.value.getApiLink('/api/v2/portal/logo')
 
     return {
       logout,
-      logoSrc
+      logoSrc,
+      helpText
     }
   },
 
