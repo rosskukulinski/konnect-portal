@@ -1,4 +1,15 @@
 export const en = {
+  custom: {
+    company: 'Kong, Inc.',
+    terms: 'Terms of Service',
+    privacy: 'Privacy Policy',
+    terms: {
+      text: 'These are the terms of services! - Hello Tuesday May 2nd.'
+    },
+    privacy: {
+      text: 'This is the Privacy Policy how is the weather today'
+    }
+  },
   login: {
     unauthenticated: 'Account could not be authenticated. If you think you are receiving this message in error, please contact your administrator.',
     successText: 'Your email has been confirmed. Awaiting account approval.',

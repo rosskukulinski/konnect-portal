@@ -8,7 +8,7 @@
         href="https://konghq.com"
         target="_blank"
       >
-        Kong, Inc.
+        {{ custom.company }}
       </a>
       <nav class="flex items-center links">
         <router-link
@@ -17,7 +17,7 @@
           class="mr-2 p-2 tos-link"
         >
           <div class="background-color-wrapper" />
-          Terms of Service
+          {{ custom.terms }}
         </router-link>
         <router-link
           data-testid="privacy-link"
@@ -25,7 +25,7 @@
           class="mr-2 p-2 privacy-link"
         >
           <div class="background-color-wrapper" />
-          Privacy Policy
+          {{ custom.privacy }}
         </router-link>
       </nav>
     </div>
