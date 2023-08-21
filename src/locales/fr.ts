@@ -40,9 +40,15 @@ export const fr: I18nType = {
   productVersion: {
     deprecatedWarningProduct: 'Cette version du produit est maintenant obsolète. Les points d\'accès resteront entièrement utilisables jusqu\'à la fin de cette version.',
     unableToRetrieveDoc: 'Impossible de récupérer la documentation',
+<<<<<<< HEAD
     noProductVersionsDetail: 'Cette application n\'est reliée à aucune version produit',
     noProductVersionsTitle: 'Aucune version de produit',
     registerProductVersion: 'Enregistrer une version de produit'
+=======
+    noProductVersionsDetail: 'This has not been translated',
+    noProductVersionsTitle: 'This has not been translated',
+    registerProductVersion: 'This has not been translated'
+>>>>>>> 8cc7256 (Prod rebase (#16))
   },
   userDropdown: {
     myApps: 'Mes Applications',
@@ -127,6 +133,7 @@ export const fr: I18nType = {
     headerDescription4: 'Veuillez copier cette valeur et la conserver dans vos archives.'
   },
   analytics: {
+<<<<<<< HEAD
     filterLabelProductVersions: translationNeeded(en.analytics.filterLabelProductVersions),
     chartOverview: translationNeeded(en.analytics.chartOverview),
     chartTitleRequests: 'Requêtes par version de produit',
@@ -151,6 +158,32 @@ export const fr: I18nType = {
     totalRequests: 'Total requêtes',
     unableToFetch: (itemName: string) => translationNeeded(en.analytics.unableToFetch(itemName)),
     viewAnalytics: translationNeeded(en.analytics.viewAnalytics)
+=======
+    filterLabelProductVersions: 'This has not been translated',
+    chartOverview: 'This has not been translated',
+    chartTitleRequests: 'This has not been translated',
+    chartTitleLatency: 'This has not been translated',
+    chartTitle4xxProductVersion: 'This has not been translated',
+    chartTitle5xxProductVersion: 'This has not been translated',
+    chartTitle4xxStatusCode: 'This has not been translated',
+    chartTitle5xxStatusCode: 'This has not been translated',
+    dashboard: 'This has not been translated',
+    resultsLimited: 'This has not been translated',
+    notAvailable: 'This has not been translated',
+    sectionCurrent: 'This has not been translated',
+    sectionLast: 'This has not been translated',
+    sectionPrevious: 'This has not been translated',
+    selectDateRange: 'This has not been translated',
+    selectProductVersions: 'This has not been translated',
+    summary: 'This has not been translated',
+    summary24Hours: 'This has not been translated',
+    summary30Days: 'This has not been translated',
+    summaryTooltip: (timespan: string) => `This ${timespan} has not been translated`,
+    timeRange: 'This has not been translated',
+    totalRequests: 'This has not been translated',
+    unableToFetch: (itemName: string) => `This has not been translaed ${itemName}`,
+    viewAnalytics: 'This has not been translateds'
+>>>>>>> 8cc7256 (Prod rebase (#16))
   },
   productList: {
     titleProducts: 'Produits',
@@ -206,8 +239,13 @@ export const fr: I18nType = {
     isEmail: 'L\'adresse e-mail doit être valide'
   },
   apiDocumentation: {
+<<<<<<< HEAD
     emptyTitle: 'Pas de documentation',
     emptyMessage: 'Ce produit n\'as pas encore de documentation. Contactez l\'administrateur du Portail développeur si cela n\'est pas le résultat attendu.',
+=======
+    emptyTitle: 'This has not been translated',
+    emptyMessage: 'This has not been translated',
+>>>>>>> 8cc7256 (Prod rebase (#16))
     error: {
       description: 'Une erreur inattendue s\'est produite lors du chargement du document demandé. Veuillez réessayer ultérieurement.',
       linkText: 'Retourner à la page d\'accueil →'
@@ -220,7 +258,11 @@ export const fr: I18nType = {
     linkText: 'Retour à la page d\'accueil →'
   },
   sidebar: {
+<<<<<<< HEAD
     noVersions: 'Ce produit n\'a pas de version produit publié',
+=======
+    noVersions: 'This has not been translated',
+>>>>>>> 8cc7256 (Prod rebase (#16))
     deprecated: ' (Obsolète)',
     noResultsProduct: 'Aucune version de produit'
   },

@@ -3656,6 +3656,19 @@ conventional-changelog-writer@^6.0.0:
     semver "^7.0.0"
     split "^1.0.1"
 
+conventional-changelog-writer@^6.0.0:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/conventional-changelog-writer/-/conventional-changelog-writer-6.0.1.tgz#d8d3bb5e1f6230caed969dcc762b1c368a8f7b01"
+  integrity sha512-359t9aHorPw+U+nHzUXHS5ZnPBOizRxfQsWT5ZDHBfvfxQOAik+yfuhKXG66CN5LEWPpMNnIMHUTCKeYNprvHQ==
+  dependencies:
+    conventional-commits-filter "^3.0.0"
+    dateformat "^3.0.3"
+    handlebars "^4.7.7"
+    json-stringify-safe "^5.0.1"
+    meow "^8.1.2"
+    semver "^7.0.0"
+    split "^1.0.1"
+
 conventional-commit-types@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/conventional-commit-types/-/conventional-commit-types-3.0.0.tgz#7c9214e58eae93e85dd66dbfbafe7e4fffa2365b"
@@ -3668,6 +3681,16 @@ conventional-commits-filter@^3.0.0:
   dependencies:
     lodash.ismatch "^4.4.0"
     modify-values "^1.0.1"
+
+conventional-commits-parser@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/conventional-commits-parser/-/conventional-commits-parser-4.0.0.tgz#02ae1178a381304839bce7cea9da5f1b549ae505"
+  integrity sha512-WRv5j1FsVM5FISJkoYMR6tPk07fkKT0UodruX4je86V4owk451yjXAKzKAPOs9l7y59E2viHUS9eQ+dfUA9NSg==
+  dependencies:
+    JSONStream "^1.3.5"
+    is-text-path "^1.0.1"
+    meow "^8.1.2"
+    split2 "^3.2.2"
 
 conventional-commits-parser@^4.0.0:
   version "4.0.0"
@@ -8837,6 +8860,11 @@ qrcode-terminal@^0.12.0:
   resolved "https://registry.yarnpkg.com/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz#bb5b699ef7f9f0505092a3748be4464fe71b5819"
   integrity sha512-EXtzRZmC+YGmGlDFbXKxQiMZNwCLEO6BANKXG4iCtSIM0yqc/pappSx3RIKr4r0uh5JsBckOXeKrB3Iz7mdQpQ==
 
+qrcode-terminal@^0.12.0:
+  version "0.12.0"
+  resolved "https://registry.yarnpkg.com/qrcode-terminal/-/qrcode-terminal-0.12.0.tgz#bb5b699ef7f9f0505092a3748be4464fe71b5819"
+  integrity sha512-EXtzRZmC+YGmGlDFbXKxQiMZNwCLEO6BANKXG4iCtSIM0yqc/pappSx3RIKr4r0uh5JsBckOXeKrB3Iz7mdQpQ==
+
 qs@6.11.0:
   version "6.11.0"
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.11.0.tgz#fd0d963446f7a65e1367e01abd85429453f0c37a"
@@ -10171,6 +10199,29 @@ svgo@^3.0.2:
     css-tree "^2.2.1"
     csso "^5.0.5"
     picocolors "^1.0.0"
+
+swagger-client@^3.19.11:
+  version "3.19.11"
+  resolved "https://registry.yarnpkg.com/swagger-client/-/swagger-client-3.19.11.tgz#b0725d260a9cb13745326dcec2b7dac0be3bcb23"
+  integrity sha512-ef4t4nRGC8NuC8rz6OazEGU/QgkrFVMUba1vDmCL1Zuov50rTix9f33COr6RSmzQEc9aqY/kd+6f43a/7TbHhQ==
+  dependencies:
+    "@babel/runtime-corejs3" "^7.20.13"
+    "@swagger-api/apidom-core" ">=0.71.0 <1.0.0"
+    "@swagger-api/apidom-json-pointer" ">=0.71.0 <1.0.0"
+    "@swagger-api/apidom-ns-openapi-3-1" ">=0.71.0 <1.0.0"
+    "@swagger-api/apidom-reference" ">=0.71.1 <1.0.0"
+    cookie "~0.5.0"
+    cross-fetch "^3.1.5"
+    deepmerge "~4.3.0"
+    fast-json-patch "^3.0.0-1"
+    form-data-encoder "^1.4.3"
+    formdata-node "^4.0.0"
+    is-plain-object "^5.0.0"
+    js-yaml "^4.1.0"
+    lodash "^4.17.21"
+    qs "^6.10.2"
+    traverse "~0.6.6"
+    url "~0.11.0"
 
 swagger-client@^3.19.8:
   version "3.19.8"
