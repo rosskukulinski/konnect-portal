@@ -32,7 +32,7 @@
       </template>
     </PageTitle>
     <div
-      v-if="contextualAnalytics && !vitalsLoading && myAppsReady"
+      v-if="!vitalsLoading && myAppsReady"
     >
       <MetricsProvider
         v-slot="{ timeframe }"
@@ -66,9 +66,20 @@
             is-small
             class="applications-table"
             :pagination-page-sizes="paginationConfig.paginationPageSizes"
+            :search-input="searchStr"
             :initial-fetcher-params="{ pageSize: paginationConfig.initialPageSize }"
             @row:click="(_, row) => $router.push({ name: 'show-application', params: { application_id: row.id }})"
           >
+            <template #toolbar="{ state }">
+              <div class="applications-toolbar">
+                <KInput
+                  v-if="state.hasData || searchStr"
+                  v-model="searchStr"
+                  :placeholder="helpText.searchPlaceholder"
+                  type="search"
+                />
+              </div>
+            </template>
             <template #name="{ row }">
               {{ row.name }}
             </template>
@@ -76,7 +87,6 @@
               <ActionsDropdown :key="row.id">
                 <template #content>
                   <div
-                    v-if="contextualAnalytics"
                     data-testid="dropdown-analytics-dashboard"
                     class="py-2 px-3 type-md cursor-pointer"
                     @click="$router.push({ name: 'application-dashboard', params: { application_id: row.id }})"
@@ -103,7 +113,7 @@
             </template>
             <template #empty-state>
               <EmptyState
-                :title="helpText.noApp"
+                :title="searchStr ? helpText.noSearchResults : helpText.noApp"
               >
                 <template #message>
                   <p>
@@ -182,8 +192,6 @@
 import { defineComponent, computed, ref, onMounted } from 'vue'
 import { useMachine } from '@xstate/vue'
 import { createMachine } from 'xstate'
-import { FeatureFlags } from '@/constants/feature-flags'
-import useLDFeatureFlag from '@/hooks/useLDFeatureFlag'
 import getMessageFromError from '@/helpers/getMessageFromError'
 import RefreshTokenModal from '@/components/RefreshTokenModal.vue'
 import PageTitle from '@/components/PageTitle.vue'
@@ -205,6 +213,7 @@ export default defineComponent({
   setup () {
     const { notify } = useToaster()
     const errorMessage = ref('')
+    const searchStr = ref('')
     const applications = ref([])
     const key = ref(0)
     const fetcherCacheKey = computed(() => key.value.toString())
@@ -218,9 +227,6 @@ export default defineComponent({
     const helpText = useI18nStore().state.helpText.myApp
     const helpTextVitals = useI18nStore().state.helpText.analytics
     const vitalsLoading = ref(true)
-
-    // @ts-ignore: Dev Portal doesn't have TS for feature flags.
-    const contextualAnalytics = useLDFeatureFlag(FeatureFlags.PortalContextualAnalytics, false)
 
     const paginationConfig = ref({
       paginationPageSizes: [25, 50, 100],
@@ -248,7 +254,11 @@ export default defineComponent({
 
     const fetcher = async (payload: { pageSize: number; page: number }) => {
       const { pageSize, page: pageNumber } = payload
-      const reqPayload = { pageNumber, pageSize }
+      const reqPayload = {
+        pageNumber,
+        pageSize,
+        ...(searchStr.value.length && { filterNameContains: searchStr.value })
+      }
 
       send('FETCH')
 
@@ -359,13 +369,13 @@ export default defineComponent({
       token,
       onModalClose,
       handleRefreshSecret,
+      searchStr,
       fetcherCacheKey,
       fetcher,
       paginationConfig,
       helpText,
       helpTextVitals,
       analyticsCardTitle,
-      contextualAnalytics,
       vitalsLoading,
       metricProviderProps,
       myAppsReady

@@ -183,6 +183,8 @@ export const de: I18nType = {
   },
   applicationRegistration: {
     noAvailableApplications: 'Aktuell haben Sie noch keine Applikationen registriert.',
+    noFoundApplications: translationNeeded(en.applicationRegistration.noFoundApplications),
+    searchPlaceholder: translationNeeded(en.applicationRegistration.searchPlaceholder),
     noApplications: 'Keine Applikationen',
     selectApplication: 'Applikation auswählen',
     createNewApplication: 'Neue Applikation anlegen +',
@@ -282,6 +284,8 @@ export const de: I18nType = {
     plus: 'Plus',
     myApps: 'Meine Applikationen',
     refreshSecret: 'Secret erneuern',
+    noSearchResults: translationNeeded(en.myApp.noSearchResults),
+    searchPlaceholder: translationNeeded(en.myApp.searchPlaceholder),
     delete: 'Löschen',
     cancel: 'Abbrechen',
     noApp: 'Keine Applikationen',
