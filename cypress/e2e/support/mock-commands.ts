@@ -7,7 +7,7 @@ import document from '../fixtures/dochub_mocks/document.json'
 import documentTreeJson from '../fixtures/dochub_mocks/documentTree.json'
 import apiDocumentationJson from '../fixtures/dochub_mocks/parentApiDocumentation.json'
 import petstoreOperationsV2 from '../fixtures/v2/petstoreOperations.json'
-import { 
+import {
   GetApplicationResponse,
   ListApplicationsResponse,
   ListCredentialsResponse,
@@ -18,11 +18,12 @@ import {
   Product,
   ProductDocument,
   ProductDocumentRaw,
+  ProductVersion,
   ProductVersionListPage,
   ProductVersionSpecDocument,
   ProductVersionSpecOperations,
   ProductVersionSpecOperationsOperationsInner,
-  SearchResults 
+  SearchResults
 } from '@kong/sdk-portal-js'
 import { THEMES } from '../fixtures/theme.constant'
 
@@ -68,6 +69,7 @@ Cypress.Commands.add('mockAppearance', (appearance = {}) => {
       }
     }
   }
+
   cy.mockLogo()
   cy.mockCatalogCover()
 
@@ -419,6 +421,36 @@ Cypress.Commands.add('mockProductVersionApplicationRegistration', (version, conf
     }).as('getProductVersionApplicationRegistration')
 })
 
+Cypress.Commands.add('mockProductVersionAvailableRegistrations', (productId, versionId, apps) => {
+  const availableRegistrations = apps.map((app) => {
+    return {
+      created_at: app.created_at,
+      updated_at: app.updated_at,
+      name: app.name,
+      id: app.id,
+      registration_id: null,
+      registration_status: null
+    }
+  })
+
+  const response = {
+    data: availableRegistrations,
+    meta: {
+      page: {
+        number: 1,
+        size: 15,
+        total: availableRegistrations.length
+      }
+    }
+  }
+
+  return cy.intercept(
+    'GET',
+    `**/api/v2/products/${productId}/versions/${versionId}/applications**`, {
+      body: response
+    }).as('getProductVersionAvailableRegistrations')
+})
+
 Cypress.Commands.add('mockProductsCatalog', (count = 1, overrides = [], pageNum = 1, pageSize = 12) => {
   const products = generateProducts(count, overrides)
   const response: SearchResults = {
@@ -505,6 +537,18 @@ Cypress.Commands.add('mockGetProductDocumentTree', (productId) => {
   ).as('ProductDocumentTree')
 })
 
+Cypress.Commands.add('mockProductVersion', (productId = '*', versionId = '*', version = versions[0]) => {
+  const versionResponse: ProductVersion = {
+    ...version
+  }
+
+  cy.intercept('get', `**/api/v2/products/${productId}/versions/${versionId}`, {
+    statusCode: 200,
+    delay: 100,
+    body: versionResponse
+  }).as('productVersion')
+})
+
 Cypress.Commands.add('mockProductVersionSpec', (productId = '*', versionId = '*', content = JSON.stringify(petstoreJson30)) => {
   const specResponse: ProductVersionSpecDocument = {
     api_type: 'openapi',
@@ -519,7 +563,7 @@ Cypress.Commands.add('mockProductVersionSpec', (productId = '*', versionId = '*'
 Cypress.Commands.add('mockProductOperations', (productId = '*', versionId = '*', operations = petstoreOperationsV2.operations as ProductVersionSpecOperationsOperationsInner[]) => {
   const operationsResponse: ProductVersionSpecOperations = {
     api_type: 'openapi',
-    operations: operations
+    operations
   }
 
   cy.intercept('get', `**/api/v2/products/${productId}/versions/${versionId}/spec/operations`, {

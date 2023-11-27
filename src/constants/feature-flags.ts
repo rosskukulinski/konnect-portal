@@ -1,3 +1,3 @@
 export enum FeatureFlags {
-  PortalContextualAnalytics = 'ma-1002-dev-portal-contextual-analytics'
+  DeveloperManagedScopes = 'tdx-3460-developer-managed-scopes'
 }

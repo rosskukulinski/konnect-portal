@@ -24,11 +24,13 @@ declare global {
       mockProductDocumentTree(productId?: string, options?: Partial<TypeOptions> & {body: any}): Chainable<JQuery<HTMLElement>>
       mockProductApiDocument(productId?: string, options?: Partial<TypeOptions> & {body: any}): Chainable<JQuery<HTMLElement>>
       mockProduct(productId?: string, mockProduct?: Product, mockVersions?: ProductVersion[]): Chainable<JQuery<HTMLElement>>
+      mockProductVersion(productId?: string, versionId?: string, mockVersion?: ProductVersion): Chainable<JQuery<HTMLElement>>
       mockApplications(searchResults?: Array<GetApplicationResponse>, totalCount?: number, pageSize?: number, pageNumber?: number): Chainable<JQuery<HTMLElement>>
       mockApplicationWithCredAndReg(data: GetApplicationResponse, credentials?: ListCredentialsResponseDataInner[], registrations?: Array<GetRegistrationResponse>): Chainable<JQuery<HTMLElement>>,
       mockContextualAnalytics(): Chainable<JQuery<HTMLElement>>
       mockRegistrations(applicationId?: string, registrations?: Array<GetRegistrationResponse>, totalCount?: number): Chainable<JQuery<HTMLElement>>
       mockProductVersionApplicationRegistration(value:any): Chainable<JQuery<HTMLElement>>
+      mockProductVersionAvailableRegistrations(productId: string, versionId: string, apps: GetApplicationResponse[]): Chainable<JQuery<HTMLElement>>
       mockProductsCatalog(count?: number, overrides?: Partial<ProductCatalogIndexSource>[], pageNum?:number, pageSize?:number): Chainable<JQuery<HTMLElement>>
       mockGetProductDocumentBySlug(servicePckageId: string, slug:string, options?:Partial<TypeOptions> & {document?:any, revision?: any}): Chainable<JQuery<HTMLElement>>
       mockGetProductDocuments(productId:string): Chainable<JQuery<HTMLElement>>

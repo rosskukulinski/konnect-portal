@@ -179,11 +179,15 @@ export const en = {
   },
   applicationRegistration: {
     noAvailableApplications: 'You currently have no applications to register.',
+    noFoundApplications: 'You currently have no applications with that name.',
     noApplications: 'No Applications',
     selectApplication: 'Select Application',
     createNewApplication: 'Create new Application +',
     createApplication: 'Create an Application',
+    searchPlaceholder: 'Search applications',
     cancelButton: 'Cancel',
+    availableScopesLabel: 'Select scopes',
+    fetchingScopesLabel: 'Fetching scopes...',
     registeredApplicationsProduct: 'The following applications are already registered to this product:',
     modalApplicationRegistrationDefault: {
       title: (serviceName: string, productVersion: string) => `Register for ${serviceName} - ${productVersion}`,
@@ -281,6 +285,8 @@ export const en = {
     delete: 'Delete',
     cancel: 'Cancel',
     noApp: 'No Applications',
+    searchPlaceholder: 'Search applications',
+    noSearchResults: 'No Applications Found',
     create: 'Create a new app',
     getStarted: ' to get started',
     deleteDialog: (name: string) => `Are you sure you want to delete ${name}? This action cannot be undone.`

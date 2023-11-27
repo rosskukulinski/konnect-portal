@@ -22,60 +22,59 @@
           v-if="currentState.matches('error') "
           appearance="danger"
           :alert-message="errorMessage"
-          class="mb-4"
+          class="alert-message"
         />
-        <div v-if="!availableApplications.length">
-          <p class="color-text_colors-primary">
-            {{ helpText.applicationRegistration.noAvailableApplications }}
-          </p>
-          <div v-if="registeredApplications.length">
-            <p>
-              {{ alreadyRegisteredMessage }}
-            </p>
-            <ul class="registered-apps-list">
-              <li
-                v-for="app in registeredApplications"
-                :key="app.id"
+        <KTable
+          :is-loading="currentState.matches('pending')"
+          data-testid="applications-list"
+          :fetcher-cache-key="fetcherCacheKey"
+          :empty-state-title="helpText.applicationRegistration.noApplications"
+          :empty-state-message="searchStr ? helpText.applicationRegistration.noFoundApplications : helpText.applicationRegistration.noAvailableApplications"
+          :fetcher="fetcher"
+          has-side-border
+          :headers="tableHeaders"
+          :pagination-page-sizes="ktablePaginationConfig.paginationPageSizes"
+          :row-attrs="rowAttrsFn"
+          :initial-fetcher-params="{ pageSize: ktablePaginationConfig.initialPageSize }"
+          :search-input="searchStr"
+          @row:click="handleRowClick"
+        >
+          <template #toolbar="{ state }">
+            <div class="applications-toolbar">
+              <KInput
+                v-if="state.hasData || searchStr"
+                v-model="searchStr"
+                :placeholder="helpText.applicationRegistration.searchPlaceholder"
+                type="search"
+              />
+            </div>
+          </template>
+          <template #name="{ row }">
+            <div class="name-container">
+              <p
+                class="table-text"
+                :data-testid="`register-${row.name}`"
               >
-                <router-link
-                  :to="{
-                    name: 'show-application',
-                    params: { 'application_id': app.id }
-                  }"
-                  class="color-blue-500"
-                >
-                  {{ app.name }}
-                </router-link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div v-else>
-          <div class="color-text_colors-primary font-semibold mb-2">
-            {{ helpText.applicationRegistration.selectApplication }}
-          </div>
-          <div>
-            <select
-              v-model="selectedApplication"
-              class="k-input w-100 mb-4"
-            >
-              <option
-                v-for="app in availableApplications"
-                :key="app.id"
-                :value="app.id"
-              >
-                {{ app.name }}
-              </option>
-            </select>
-            <router-link
-              data-testid="create-application-2"
-              :to="{ name: 'create-application', query: { product: $route.params.product, product_version: $route.params.product_version } }"
-              class="color-blue-500"
-            >
-              {{ helpText.applicationRegistration.createNewApplication }}
-            </router-link>
-          </div>
-        </div>
+                {{ row.name }}
+              </p>
+              <div v-if="selectedApplication === row.id">
+                <KMultiselect
+                  v-if="availableScopes.length"
+                  v-model="selectedScopes"
+                  :label="helpText.applicationRegistration.availableScopesLabel"
+                  collapsed-context
+                  data-testid="available-scopes-select"
+                  class="available-scopes-select"
+                  :items="mappedAvailableScopes"
+                  :loading="fetchingScopes"
+                  :placeholder="fetchingScopes ? helpText.applicationRegistration.fetchingScopesLabel : helpText.applicationRegistration.availableScopesLabel"
+                  width="100%"
+                  @change="handleChangedItem"
+                />
+              </div>
+            </div>
+          </template>
+        </KTable>
       </div>
       <div v-if="currentState.matches('success_application_status_is_pending')">
         <p class="color-text_colors-primary">
@@ -85,12 +84,12 @@
     </template>
     <template #footer-content>
       <KButton
-        v-if="!availableApplications.length"
+        v-if="!applications.length"
         data-testid="create-application"
         :is-rounded="false"
         appearance="primary"
         :disabled="currentState.matches('pending')"
-        class="mr-3"
+        class="button-spacing"
         :to="{ name: 'create-application', query: { product: $route.params.product, product_version: $route.params.product_version } }"
       >
         {{ helpText.applicationRegistration.createApplication }}
@@ -100,8 +99,8 @@
         data-testid="submit-registration"
         :is-rounded="false"
         appearance="primary"
-        :disabled="currentState.matches('pending')"
-        class="mr-3"
+        :disabled="currentState.matches('pending') || !selectedApplication"
+        class="button-spacing"
         @click="currentState.matches('success_application_status_is_pending') ? closeModal() : submitSelection()"
       >
         {{ modalText.buttonText }}
@@ -119,7 +118,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMachine } from '@xstate/vue'
 import { createMachine } from 'xstate'
@@ -127,7 +126,9 @@ import useToaster from '@/composables/useToaster'
 import usePortalApi from '@/hooks/usePortalApi'
 import { useI18nStore } from '@/stores'
 import getMessageFromError from '@/helpers/getMessageFromError'
-import { fetchAll } from '@/helpers/fetchAll'
+import useLDFeatureFlag from '@/hooks/useLDFeatureFlag'
+import { FeatureFlags } from '@/constants/feature-flags'
+import { CreateRegistrationPayload } from '@kong/sdk-portal-js'
 
 export default defineComponent({
   name: 'ViewSpecRegistrationModal',
@@ -157,10 +158,43 @@ export default defineComponent({
     const $route = useRoute()
     const { notify } = useToaster()
 
+    const searchStr = ref('')
     const helpText = useI18nStore().state.helpText
     const errorMessage = ref('')
     const selectedApplication = ref('')
+    const availableScopes = ref([])
+    const selectedScopes = ref([])
+    const alreadyGrantedScopes = ref([])
+    const useDeveloperManagedScopes = useLDFeatureFlag(FeatureFlags.DeveloperManagedScopes, false)
     const applications = ref([])
+    const key = ref(0)
+    const fetchingScopes = ref(false)
+    const fetcherCacheKey = computed(() => key.value.toString())
+
+    const mappedAvailableScopes = computed(() => {
+      if (!availableScopes.value.length) {
+        return []
+      }
+
+      return availableScopes.value.map((scope) => {
+        const alreadySelected = alreadyGrantedScopes.value?.includes(scope)
+
+        return {
+          label: scope,
+          value: scope,
+          selected: alreadySelected
+        }
+      })
+    })
+
+    const tableHeaders = [
+      { label: 'Name', key: 'name' }
+    ]
+
+    const ktablePaginationConfig = ref({
+      paginationPageSizes: [5, 25, 50],
+      initialPageSize: 5
+    })
 
     const { portalApiV2 } = usePortalApi()
 
@@ -204,77 +238,81 @@ export default defineComponent({
       }[currentState.value.matches('success_application_status_is_pending') ? 'success' : 'default']
     })
 
-    const availableApplications = computed(() => {
-      return applications.value.filter(app => {
-        if (app?.registrations?.length > 0) {
-          return app.registrations.every(r => r.product_version_id !== props.version?.id)
-        }
-
-        return app
-      })
-    })
-
-    const registeredApplications = computed(() => {
-      return applications.value.filter(app => {
-        if (app?.registrations?.length > 0) {
-          return app.registrations.some(r => r.product_version_id === props.version?.id)
-        }
-
-        return app
-      })
-    })
-
-    const attachRegistrations = async (apps) => {
-      const appsWithReg = await Promise.all(apps.map(async app => {
-        app.registrations = await fetchAll((meta) => portalApiV2.value.service.registrationsApi.listApplicationRegistrations({ applicationId: app.id, ...meta }))
-
-        return app
-      }))
-
-      return appsWithReg
+    const rowAttrsFn = (rowItem) => {
+      return {
+        class: {
+          selected: rowItem.id === selectedApplication.value
+        },
+        'data-testid': 'row-item'
+      }
     }
 
-    const initializeSelectedApplication = () => {
-      // no available applications, return
-      if (!availableApplications.value.length) {
-        return
-      }
-
-      // if initialSelectedApplication prop exists in availableApplications, return initialSelectedApplication (id)
-      if (availableApplications.value.some(app => app.id === props.initialSelectedApplication)) {
-        return props.initialSelectedApplication
-      }
-
-      // otherwise, return the first available application id
-      return availableApplications.value[0].id
+    const handleRowClick = (e, row) => {
+      selectedApplication.value = row.id
     }
 
-    const fetchApplications = () => {
+    const fetcher = async (payload: { pageSize: number; page: number }) => {
+      const { pageSize, page: pageNumber } = payload
+
+      const requestOptions = {
+        productId: props.product?.id || $route.params.product,
+        productVersionId: props.version?.id || $route.params.product_version,
+        ...(searchStr.value.length && { filterNameContains: searchStr.value }),
+        unregistered: true,
+        pageNumber,
+        pageSize
+      }
+
       send('FETCH')
-      fetchAll((meta) => portalApiV2.value.service.applicationsApi.listApplications(meta))
-        .then(async (apps) => {
-          applications.value = await attachRegistrations(apps)
-          selectedApplication.value = initializeSelectedApplication()
+
+      return portalApiV2.value.service.versionsApi.getApplicationsByProductVersion(requestOptions)
+        .then((res) => {
           send('RESOLVE')
-        })
-        .catch(error => {
-          console.error(error)
-          send('REJECT', {
-            errorMessage: getMessageFromError(error)
-          })
+
+          applications.value = res.data.data
+
+          return {
+            data: res.data.data,
+            total: res.data.meta.page.total
+          }
+        }).catch((e) => {
+          send('RESOLVE')
+
+          return handleError(e)
         })
     }
 
-    const submitSelection = () => {
+    const handleError = (error: any) => {
+      notify({
+        appearance: 'danger',
+        message: getMessageFromError(error)
+      })
+    }
+
+    const handleChangedItem = (item) => {
+      if (!item) { return }
+
+      const itemAdded = selectedScopes.value.filter(curr => curr.value === item.value)
+
+      // If a new item selected, set its `selected` state to true
+      item.selected = !!itemAdded.length
+    }
+
+    const submitSelection = async () => {
       send('CLICK_SUBMIT')
-      portalApiV2.value.service.registrationsApi.createApplicationRegistration({
+      const payload: CreateRegistrationPayload = {
+        product_version_id: props.version.id
+      }
+
+      if (selectedScopes.value.length) {
+        payload.scopes = selectedScopes.value
+      }
+
+      await portalApiV2.value.service.registrationsApi.createApplicationRegistration({
         applicationId: selectedApplication.value,
-        createRegistrationPayload: {
-          product_version_id: props.version.id
-        }
+        createRegistrationPayload: payload
       })
         .then(
-          /** @param {import('axios').AxiosResponse<{status: 'approved'|'pending'}>} res */
           res => {
             let message = 'Registration '
 
@@ -299,22 +337,59 @@ export default defineComponent({
     const closeModal = () => {
       send('CLOSED')
       emit('close')
+      selectedApplication.value = null
+      searchStr.value = ''
     }
 
-    watch(() => props.isVisible, (newState) => {
-      if (newState) {
-        fetchApplications()
+    watch(() => selectedApplication.value, (newSelectedApplication, oldSelectedApplication) => {
+      // We reset selectedScopes if we change applications
+      if (newSelectedApplication !== oldSelectedApplication && selectedScopes.value.length) {
+        selectedScopes.value = []
       }
     })
 
-    watch(selectedApplication, (newSelectedApplication) => {
-      if (newSelectedApplication && newSelectedApplication !== $route.query.application) {
-        $router.replace({
-          query: {
-            ...$route.query,
-            application: newSelectedApplication
-          }
-        })
+    watch([() => props.product, () => props.version, () => selectedApplication.value], async (newValues, oldValues) => {
+      if (props.product && props.version && useDeveloperManagedScopes) {
+        alreadyGrantedScopes.value = []
+        fetchingScopes.value = true
+        // Only make the getProductVersion request if we change productVersions
+        if (newValues[1] !== oldValues[1]) {
+          await portalApiV2.value.service.versionsApi.getProductVersion({
+            productId: props.product.id,
+            productVersionId: props.version.id
+          }).then((res) => {
+            fetchingScopes.value = false
+            const registrationConfigs = res.data.registration_configs
+
+            if (registrationConfigs?.length && registrationConfigs[0].available_scopes) {
+              availableScopes.value = registrationConfigs[0].available_scopes
+            }
+          }).finally(() => {
+            fetchingScopes.value = false
+          })
+        }
+
+        if (selectedApplication.value) {
+          fetchingScopes.value = true
+
+          await portalApiV2.value.service.applicationsApi.getApplicationProductVersionGrantedScopes({
+            applicationId: selectedApplication.value,
+            productVersionId: props.version.id
+          }).then((res) => {
+            const grantedScopesArr = res.data.scopes
+
+            alreadyGrantedScopes.value = grantedScopesArr
+            fetchingScopes.value = false
+          }).finally(() => {
+            fetchingScopes.value = false
+          })
+        }
+      }
+    })
+
+    onMounted(async () => {
+      if (props.initialSelectedApplication) {
+        searchStr.value = props.initialSelectedApplication
       }
     })
 
@@ -326,10 +401,20 @@ export default defineComponent({
       applications,
       selectedApplication,
       helpText,
+      handleChangedItem,
+      availableScopes,
+      mappedAvailableScopes,
+      selectedScopes,
+      rowAttrsFn,
+      fetchingScopes,
+      fetcher,
       modalText,
-      availableApplications,
+      searchStr,
+      tableHeaders,
+      fetcherCacheKey,
+      ktablePaginationConfig,
       alreadyRegisteredMessage,
-      registeredApplications,
+      handleRowClick,
       submitSelection,
       closeModal
     }
@@ -339,20 +424,57 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 
- .registered-apps-list {
-   margin-top: 1rem;
-   list-style: none;
-   text-align: left;
-   padding-left: var(--spacing-xl, 32px);
+ .table-text {
+  text-align: left;
+  font-weight: 600;
  }
+
+ .application-registration-modal {
+  :deep(.selected) {
+    background-color: var(--text_colors-accent) !important;
+
+    td {
+      color: var(--section_colors-body) !important;
+    }
+
+    .k-input-label {
+      color: var(--section_colors-body);
+      font-weight: 600;
+      width: 100%;
+    }
+  }
+
+  // TODO: kui vars
+  .alert-message {
+    margin-bottom: 16px;
+  }
+  .button-spacing {
+    margin-right: 12px;
+  }
+ }
+
+  .name-container {
+    display: flex;
+    flex-direction: column;
+
+    .available-scopes-select {
+      margin-top: 14px;
+    }
+  }
+
 </style>
 
 <style lang="scss">
 .application-registration-modal {
   .modal-backdrop {
     .modal-dialog {
-      margin-top: 7rem;
+      margin-top: 4rem;
+      margin-bottom: 0;
+      max-width: 750px;
     }
+  }
+  .k-table-toolbar {
+    margin-bottom: 8px !important;
   }
 }
 </style>
