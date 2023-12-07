@@ -10,24 +10,6 @@
       >
         Kong, Inc.
       </a>
-      <nav class="flex items-center links">
-        <router-link
-          data-testid="tos-link"
-          :to="{ name: 'TermsOfService' }"
-          class="mr-2 p-2 tos-link"
-        >
-          <div class="background-color-wrapper" />
-          Terms of Service
-        </router-link>
-        <router-link
-          data-testid="privacy-link"
-          :to="{ name: 'PrivacyPolicy' }"
-          class="mr-2 p-2 privacy-link"
-        >
-          <div class="background-color-wrapper" />
-          Privacy Policy
-        </router-link>
-      </nav>
     </div>
   </header>
 </template>
@@ -36,7 +18,7 @@
 import { defineComponent } from 'vue'
 import { mapState, storeToRefs } from 'pinia'
 import { useAppStore } from '@/stores'
-import { portalApi } from '@/services'
+import usePortalApi from '@/hooks/usePortalApi'
 
 export default defineComponent({
   name: 'Footer',
@@ -52,8 +34,8 @@ export default defineComponent({
 
       window.location.href = logoutUrl
     }
-
-    const logoSrc = portalApi.getApiLink('/portal_assets/logo')
+    const { portalApiV2 } = usePortalApi()
+    const logoSrc = portalApiV2.value.getApiLink('/portal_assets/logo')
 
     return {
       logout,
