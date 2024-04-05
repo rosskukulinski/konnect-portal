@@ -25,6 +25,7 @@
           class="alert-message"
         />
         <KTable
+          class="applications-list"
           :is-loading="currentState.matches('pending')"
           data-testid="applications-list"
           :fetcher-cache-key="fetcherCacheKey"
@@ -47,6 +48,15 @@
                 :placeholder="helpText.applicationRegistration.searchPlaceholder"
                 type="search"
               />
+
+              <KButton
+                v-if="state.hasData"
+                appearance="primary"
+                :is-rounded="false"
+                :to="{ name: 'create-application', query: createApplicationQuery }"
+              >
+                {{ helpText.applicationRegistration.createApplication }}
+              </KButton>
             </div>
           </template>
           <template #name="{ row }">
@@ -67,10 +77,14 @@
                   class="available-scopes-select"
                   :items="mappedAvailableScopes"
                   :loading="fetchingScopes"
-                  :placeholder="fetchingScopes ? helpText.applicationRegistration.fetchingScopesLabel : helpText.applicationRegistration.availableScopesLabel"
+                  :placeholder="fetchingScopes ? helpText.applicationRegistration.fetchingScopesLabel : helpText.applicationRegistration.filterScopes"
                   width="100%"
                   @change="handleChangedItem"
-                />
+                >
+                  <template #label-tooltip>
+                    {{ helpText.applicationRegistration.updateScopesWarning }}
+                  </template>
+                </KMultiselect>
               </div>
             </div>
           </template>
@@ -90,7 +104,7 @@
         appearance="primary"
         :disabled="currentState.matches('pending')"
         class="button-spacing"
-        :to="{ name: 'create-application', query: { product: $route.params.product, product_version: $route.params.product_version } }"
+        :to="{ name: 'create-application', query: createApplicationQuery }"
       >
         {{ helpText.applicationRegistration.createApplication }}
       </KButton>
@@ -118,16 +132,14 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref, onMounted, watch } from 'vue'
+import { computed, defineComponent, ref, onMounted, watch, PropType } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMachine } from '@xstate/vue'
 import { createMachine } from 'xstate'
 import useToaster from '@/composables/useToaster'
 import usePortalApi from '@/hooks/usePortalApi'
-import { useI18nStore } from '@/stores'
+import { ProductWithVersions, useI18nStore } from '@/stores'
 import getMessageFromError from '@/helpers/getMessageFromError'
-import useLDFeatureFlag from '@/hooks/useLDFeatureFlag'
-import { FeatureFlags } from '@/constants/feature-flags'
 import { CreateRegistrationPayload } from '@kong/sdk-portal-js'
 
 export default defineComponent({
@@ -142,7 +154,7 @@ export default defineComponent({
       default: false
     },
     product: {
-      type: Object,
+      type: Object as PropType<ProductWithVersions>,
       default: () => {}
     },
     version: {
@@ -165,18 +177,17 @@ export default defineComponent({
     const availableScopes = ref([])
     const selectedScopes = ref([])
     const alreadyGrantedScopes = ref([])
-    const useDeveloperManagedScopes = useLDFeatureFlag(FeatureFlags.DeveloperManagedScopes, false)
     const applications = ref([])
     const key = ref(0)
     const fetchingScopes = ref(false)
     const fetcherCacheKey = computed(() => key.value.toString())
 
     const mappedAvailableScopes = computed(() => {
-      if (!availableScopes.value.length) {
+      if (!availableScopes.value?.length) {
         return []
       }
 
-      return availableScopes.value.map((scope) => {
+      return availableScopes.value?.map((scope) => {
         const alreadySelected = alreadyGrantedScopes.value?.includes(scope)
 
         return {
@@ -238,6 +249,26 @@ export default defineComponent({
       }[currentState.value.matches('success_application_status_is_pending') ? 'success' : 'default']
     })
 
+    const authStrategyId = computed(() => {
+      const productVersion = $route.params.product_version
+      const matchingVersion = props.product?.versions?.find((version) => version.id === productVersion)
+      if (!matchingVersion) {
+        return
+      }
+
+      return matchingVersion.registration_configs[0]?.id
+    })
+
+    const createApplicationQuery = computed(() => {
+      return {
+        product: $route.params.product,
+        product_version: $route.params.product_version,
+        ...(authStrategyId.value)
+          ? { auth_strategy_id: authStrategyId.value }
+          : {}
+      }
+    })
+
     const rowAttrsFn = (rowItem) => {
       return {
         class: {
@@ -255,9 +286,10 @@ export default defineComponent({
       const { pageSize, page: pageNumber } = payload
 
       const requestOptions = {
-        productId: props.product?.id || $route.params.product,
-        productVersionId: props.version?.id || $route.params.product_version,
-        ...(searchStr.value.length && { filterNameContains: searchStr.value }),
+        productId: props.product?.id || $route.params.product?.toString(),
+        productVersionId: props.version?.id || $route.params.product_version?.toString(),
+        filterAuthStrategyId: authStrategyId.value,
+        ...(searchStr.value?.length && { filterNameContains: searchStr.value }),
         unregistered: true,
         pageNumber,
         pageSize
@@ -292,10 +324,10 @@ export default defineComponent({
     const handleChangedItem = (item) => {
       if (!item) { return }
 
-      const itemAdded = selectedScopes.value.filter(curr => curr.value === item.value)
+      const itemAdded = selectedScopes.value.includes(item.value)
 
       // If a new item selected, set its `selected` state to true
-      item.selected = !!itemAdded.length
+      item.selected = !itemAdded
     }
 
     const submitSelection = async () => {
@@ -304,7 +336,7 @@ export default defineComponent({
         product_version_id: props.version.id
       }
 
-      if (selectedScopes.value.length) {
+      if (selectedScopes.value?.length) {
         payload.scopes = selectedScopes.value
       }
 
@@ -343,13 +375,13 @@ export default defineComponent({
 
     watch(() => selectedApplication.value, (newSelectedApplication, oldSelectedApplication) => {
       // We reset selectedScopes if we change applications
-      if (newSelectedApplication !== oldSelectedApplication && selectedScopes.value.length) {
+      if (newSelectedApplication !== oldSelectedApplication && selectedScopes.value?.length) {
         selectedScopes.value = []
       }
     })
 
     watch([() => props.product, () => props.version, () => selectedApplication.value], async (newValues, oldValues) => {
-      if (props.product && props.version && useDeveloperManagedScopes) {
+      if (props.product && props.version) {
         alreadyGrantedScopes.value = []
         fetchingScopes.value = true
         // Only make the getProductVersion request if we change productVersions
@@ -369,7 +401,9 @@ export default defineComponent({
           })
         }
 
-        if (selectedApplication.value) {
+        // don't fetch the applications granted scopes if there are no available
+        // scopes.
+        if (selectedApplication.value && availableScopes.value?.length) {
           fetchingScopes.value = true
 
           await portalApiV2.value.service.applicationsApi.getApplicationProductVersionGrantedScopes({
@@ -378,8 +412,11 @@ export default defineComponent({
           }).then((res) => {
             const grantedScopesArr = res.data.scopes
 
-            alreadyGrantedScopes.value = grantedScopesArr
-            selectedScopes.value = grantedScopesArr
+            if (grantedScopesArr?.length) {
+              alreadyGrantedScopes.value = grantedScopesArr
+              selectedScopes.value = grantedScopesArr
+            }
+
             fetchingScopes.value = false
           }).finally(() => {
             fetchingScopes.value = false
@@ -417,7 +454,9 @@ export default defineComponent({
       alreadyRegisteredMessage,
       handleRowClick,
       submitSelection,
-      closeModal
+      closeModal,
+      authStrategyId,
+      createApplicationQuery
     }
   }
 })
@@ -427,19 +466,11 @@ export default defineComponent({
 
  .table-text {
   text-align: left;
-  font-weight: 600;
  }
 
  .application-registration-modal {
   :deep(.selected) {
-    background-color: var(--text_colors-accent) !important;
-
     td {
-      color: var(--section_colors-body) !important;
-    }
-
-    .k-input-label {
-      color: var(--section_colors-body);
       font-weight: 600;
       width: 100%;
     }
@@ -463,6 +494,11 @@ export default defineComponent({
     }
   }
 
+  .applications-toolbar {
+    display: flex;
+    justify-content: space-between;
+  }
+
 </style>
 
 <style lang="scss">
@@ -472,6 +508,17 @@ export default defineComponent({
       margin-top: 4rem;
       margin-bottom: 0;
       max-width: 750px;
+
+      .k-multiselect {
+        .k-multiselect-icon .k-multiselect-clear-icon {
+          top: 21px;
+        }
+
+        .k-multiselect-selections {
+          display: flex;
+          flex-wrap: wrap;
+        }
+      }
     }
   }
   .k-table-toolbar {

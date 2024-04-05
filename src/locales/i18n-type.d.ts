@@ -40,6 +40,18 @@ export interface I18nType {
     noProductVersionsTitle: string;
     registerProductVersion: string;
   };
+  authStrategyInfo: {
+    titleLabel: string;
+    credentialTypeLabel: string;
+    registerBtnText: (productVersionName: string) => string;
+    authMethods: string;
+    keyNames: string;
+    bearer: string;
+    keyAuth: string;
+    clientCredentials: string;
+    selfManagedClientCredentials: string;
+    session: string;
+  };
   userDropdown: {
     myApps: string;
     logout: string;
@@ -99,9 +111,14 @@ export interface I18nType {
     delete: string;
     proceed: string;
     applicationName: string;
+    authStrategy: string;
+    authStrategyWarning: string;
     clientID: string;
     clientSecret: string;
     reqField: string;
+    grantedScopes: string;
+    availableScopes: string;
+    filterScopesPlaceholder: string;
     redirectUriLabel: string;
     applicationCredentials: string;
     applicationSecret: string;
@@ -164,7 +181,6 @@ export interface I18nType {
       version: string;
       status: string;
       actions: string;
-      scopes: string;
     };
   };
   dcrAuthentication: {
@@ -191,6 +207,8 @@ export interface I18nType {
     registeredApplicationsProduct: string;
     searchPlaceholder: string;
     availableScopesLabel: string;
+    updateScopesWarning: string;
+    filterScopes: string;
     modalApplicationRegistrationDefault: {
       title: (serviceName: string, productVersion: string) => string;
       buttonText: string;
@@ -280,10 +298,14 @@ export interface I18nType {
     logoAlt: string;
   };
   myApp: {
+    authStrategyWarning: string;
+    authStrategyFetchError: (errString: string) => string;
     newApp: string;
     plus: string;
     myApps: string;
     refreshSecret: string;
+    refreshSecretSuccess: string;
+    refreshSecretFailure: (error:string) => string;
     delete: string;
     cancel: string;
     searchPlaceholder: string;
@@ -292,6 +314,8 @@ export interface I18nType {
     create: string;
     getStarted: string;
     deleteDialog: (name: string) => string;
+    deleteSuccess: string;
+    deleteFailure: (str: string) => string;
   };
   router: {
     portalTitle: string;
@@ -301,6 +325,7 @@ export interface I18nType {
     resetPasswordTitle: string;
     catalogTitleProduct: string;
     specTitle: string;
+    oauth2RedirectTitle: string;
     docsTitle: string;
     appsTitle: string;
     createAppTitle: string;
@@ -311,4 +336,11 @@ export interface I18nType {
     forbiddenTitle: string;
     errorTitle: string;
   };
+  oauth2: {
+    dataNotFound: string;
+    noDescription: string;
+    moreInfo: string;
+    authMaybeUnsafe: string;
+    defaultError: string;
+  }
 }
